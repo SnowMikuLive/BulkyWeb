@@ -1,0 +1,69 @@
+let dataTable;
+
+$(function () {
+    loadDataTable();
+});
+
+function loadDataTable() {
+    dataTable = new DataTable('#tblData', {
+        ajax: {
+            url: '/Admin/Company/GetAll',
+            type: 'GET'
+        },
+        columns: [
+            { data: 'name', width: '15%' },
+            { data: 'streetAddress', width: '15%' },
+            { data: 'city', width: '15%' },
+            { data: 'state', width: '15%' },
+            { data: 'phoneNumber', width: '15%' },
+            {
+                data: 'id',
+                orderable: false,
+                render: function (data) {
+                    return (
+                        '<div class="w-75 btn-group" role="group">' +
+                        '<a href="/Admin/Company/Upsert?id=' +
+                        data +
+                        '" class="btn btn-primary mx-2"><i class="bi bi-pencil-square"></i> Edit</a>' +
+                        '<a onclick="Delete(\'/Admin/Company/Delete/' +
+                        data +
+                        '\')" class="btn btn-danger mx-2"><i class="bi bi-trash-fill"></i> Delete</a>' +
+                        '</div>'
+                    );
+                },
+                width: '25%'
+            }
+        ]
+    });
+}
+
+function Delete(url) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            $.ajax({
+                type: 'DELETE',
+                url: url,
+                dataType: 'json',
+                success: function (data) {
+                    if (data.success) {
+                        dataTable.ajax.reload();
+                        Swal.fire('Deleted!', data.message, 'success');
+                    } else {
+                        Swal.fire('Error!', data.message, 'error');
+                    }
+                },
+                error: function () {
+                    Swal.fire('Error!', 'Something went wrong while deleting.', 'error');
+                }
+            });
+        }
+    });
+}
